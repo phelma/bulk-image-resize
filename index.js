@@ -5,11 +5,40 @@ let outPath = '/Users/phelm/Code/pimloc/image-resize/resized';
 let minWidth = 512;
 let minHeight = 512;
 let quality = 90;
+let parallel = 2;
+
 
 let gm = require('gm');
 let walk = require('walkdir');
 let path = require('path');
 let mkdirp = require('mkdirp');
+let async = require('async');
+
+let q = async.queue((task, cb) => {
+  let relative = path.relative(inPath, task.file);
+  let outPathObj = path.parse(path.join(outPath, relative));
+  let outDir = outPathObj.dir;
+  let fullOutPath = path.join(outPathObj.dir, outPathObj.name + '.jpg');
+  mkdirpOnce(outDir, () => {
+    gm(task.file)
+      .resize(
+        minWidth,
+        minHeight,
+        '^ >'
+      )
+      .noProfile()
+      .quality(quality)
+      .write(fullOutPath,
+        (err) => {
+          if (err){
+            console.log('SKIPPED', task.file);
+          } else {
+            console.log('DONE   ', task.file);
+          }
+        }
+      );
+  });
+}, parallel);
 
 let mkdirpOnce = (path, cb) => {
   this.made = this.made || [];
@@ -23,29 +52,7 @@ let mkdirpOnce = (path, cb) => {
 
 walk(inPath)
   .on('file', (file, stat) => {
-    let relative = path.relative(inPath, file);
-    let outPathObj = path.parse(path.join(outPath, relative));
-    let outDir = outPathObj.dir;
-    let fullOutPath = path.join(outPathObj.dir, outPathObj.name + '.jpg');
-    mkdirpOnce(outDir, () => {
-      gm(file)
-        .resize(
-          minWidth,
-          minHeight,
-          '^ >'
-        )
-        .noProfile()
-        .quality(90)
-        .write(fullOutPath,
-          (err) => {
-            if (err){
-              console.log('SKIPPED', file);
-            } else {
-              console.log('DONE   ', file);
-            }
-          }
-        );
-    });
+    q.push({file});
   });
 
 
