@@ -14,7 +14,15 @@ let path = require('path');
 let mkdirp = require('mkdirp');
 let async = require('async');
 
+let results = {
+  started: 0,
+  complete: 0,
+  good: 0,
+  bad: 0
+};
+
 let q = async.queue((task, cb) => {
+  results.started ++;
   let relative = path.relative(inPath, task.file);
   let outPathObj = path.parse(path.join(outPath, relative));
   let outDir = outPathObj.dir;
@@ -31,9 +39,17 @@ let q = async.queue((task, cb) => {
       .write(fullOutPath,
         (err) => {
           if (err){
-            console.log('❌    ', task.file);
+            results.bad ++;
           } else {
-            console.log('✅    ', task.file);
+            results.good ++;
+          }
+          if (++ results.complete % 100 === 0){
+            console.log(`\n\n
+              Started  : ${results.started}
+              Complete : ${results.complete}
+                    ✅  : ${results.good}
+                    ❌  : ${results.bad}
+            `);
           }
           cb();
         }
