@@ -31,10 +31,11 @@ let q = async.queue((task, cb) => {
       .write(fullOutPath,
         (err) => {
           if (err){
-            console.log('SKIPPED', task.file);
+            console.log('❌    ', task.file);
           } else {
-            console.log('DONE   ', task.file);
+            console.log('✅    ', task.file);
           }
+          cb();
         }
       );
   });
