@@ -1,0 +1,13 @@
+{
+  "name": "resize-node",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {},
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.1.4",
+    "gm": "^1.23.0",
+    "mkdirp": "^0.5.1",
+    "walkdir": "^0.0.11"
+  }
+}
